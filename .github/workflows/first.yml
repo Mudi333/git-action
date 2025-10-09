@@ -28,3 +28,23 @@ jobs:
 
       - name: run tests
         run: npm test
+
+         deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v5
+
+      - name: setup SSH
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add VPS to known_hosts
+        run: ssh-keyscan 91.99.70.80 >> ~/.ssh/known_hosts
+
+      - name: deploy to VPS
+        run: ssh root@91.99.70.80 'rm -rf /tmp/demo_gh_actions /var/www/html/* && git clone git@github.com:dci-fbw-wd-24-e10/demo_gh_actions.git /tmp/demo_gh_actions && mv /tmp/demo_gh_actions/index.html /var/www/html/ && mv /tmp/demo_gh_actions/main.js' /var/www/html/
+
